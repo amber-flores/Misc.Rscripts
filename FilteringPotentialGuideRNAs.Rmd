@@ -1,0 +1,39 @@
+---
+title: "Filtering Potential Guide RNAs"
+output: html_document
+---
+```{r load libraries}
+library(tidyverse)
+library(stringr)
+```
+
+```{r upload data}
+test_crispr <- read_csv("~/Desktop/Crispr_Sites_AAP6-like-35.csv", col_names = TRUE) #change path for annotations.csv
+```
+
+
+```{r filtering potential guide RNAs}
+allCG <- "([CG]{4})" #overhang has 100% GC content
+noCG <- "([AT]{4})" #overhang has 0% GC content
+
+test_crispr <- test_crispr %>% 
+  select("Name", "# Off-target Sites", "Doench (2014) Activity Score", "Target Sequence", "Zhang (2013) Specificity Score") %>% 
+  filter(`Doench (2014) Activity Score` > .200) %>% 
+  arrange(`Doench (2014) Activity Score`)
+
+test_crispr$Overhang <- test_crispr$`Target Sequence` %>% str_sub(9,12) #subset bp 9-12 for the overhang
+
+test_crispr <- test_crispr %>% filter(!Overhang %in% c("GGAG","CGCT", allCG, noCG))  #overhang cannot be overhangs already present in L1 construct, 100% GC content, or 0% GC content
+
+test_crispr$Overhang13 <- test_crispr$Overhang %>% str_sub(1,3) #create new column with first 3 bp of the overhang
+test_crispr$Overhang24 <- test_crispr$Overhang %>% str_sub(2,4) #create new column with last 3 bp of overhang
+
+test_crispr <- test_crispr %>% distinct(Overhang13, Overhang24, .keep_all = TRUE) #remove duplicate rows if match between overhang13 and overhang24, .keep_all = TRUE keeps all columns 
+
+test_crispr <- test_crispr %>% arrange(`# Off-target Sites`) 
+
+write.csv(test_crispr, file = "~/Box Sync/Potential_Guide_RNAs/Filtered_gRNAs/AAP6-like-35_CrisprGuides_CG.csv")
+```
+
+
+
