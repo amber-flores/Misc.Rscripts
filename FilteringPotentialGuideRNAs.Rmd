@@ -8,7 +8,7 @@ library(stringr)
 ```
 
 ```{r upload data}
-test_crispr <- read_csv("~/Desktop/Crispr_Sites_AAP6-like-35.csv", col_names = TRUE) #change path for annotations.csv
+test_crispr <- read_csv("~/Desktop/Crispr_Sites_AAP6-like-35.csv", col_names = TRUE) #CHANGE path for annotations.csv
 ```
 
 
@@ -16,8 +16,11 @@ test_crispr <- read_csv("~/Desktop/Crispr_Sites_AAP6-like-35.csv", col_names = T
 allCG <- "([CG]{4})" #overhang has 100% GC content
 noCG <- "([AT]{4})" #overhang has 0% GC content
 
+#filter test_crispr so that there are less than 6 off target sites and higher than .2 activity score
+#had to first separate the # in original `# Off-target Sites`
 test_crispr <- test_crispr %>% 
-  select("Name", "# Off-target Sites", "Doench (2014) Activity Score", "Target Sequence", "Zhang (2013) Specificity Score") %>% 
+  select("Name", "# Off-target Sites", "Doench (2014) Activity Score", "Target Sequence", "Zhang (2013) Specificity Score") %>% separate("# Off-target Sites", "# Off-target Sites", sep = " ", convert = TRUE, extra = "warn" ) %>% 
+  filter(`# Off-target Sites` < 6) %>%
   filter(`Doench (2014) Activity Score` > .200) %>% 
   arrange(`Doench (2014) Activity Score`)
 
@@ -32,7 +35,16 @@ test_crispr <- test_crispr %>% distinct(Overhang13, Overhang24, .keep_all = TRUE
 
 test_crispr <- test_crispr %>% arrange(`# Off-target Sites`) 
 
-write.csv(test_crispr, file = "~/Box Sync/Potential_Guide_RNAs/Filtered_gRNAs/AAP6-like-35_CrisprGuides_CG.csv")
+write.csv(test_crispr, file = "~/Box Sync/Potential_Guide_RNAs/Filtered_gRNAs/AAP6-like-35_CrisprGuides_CG.csv") #CHANGE where file is output and the name of the file
+
+```
+
+
+
+
+
+
+
 ```
 
 
